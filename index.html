@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width">
+  <title></title>
+  <script>
+    if(window.location.pathname.indexOf('index.html') > -1) {
+      window.cuemeIMLoc = window.location.origin + window.location.pathname.replace("index.html", "im/im.scxml");
+    } else {
+      window.cuemeIMLoc = window.location.origin + window.location.pathname + "im/im.scxml";
+    }
+    console.log(window.cuemeIMLoc);
+  </script>
+
+
+  <!-- bower:css -->
+  <!-- endbower -->
+
+  <link rel="stylesheet" href="css/app-3db45075c6.css">
+</head>
+
+<body ng-app="of-client">
+<ion-nav-view>
+
+
+</ion-nav-view>
+
+<!-- cordova script (this will be a 404 during development) -->
+<!--<script src="cordova.js"></script>-->
+
+<script src="scripts/bower-combined-32d626f2b4.js"></script>
+
+<script src="scripts/app-1371e5e27a.js"></script>
+
+</body>
+
+</html>

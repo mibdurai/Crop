@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xscxml initialstate="home" xmlns="http://www.openstream.com/scxml"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.openstream.com/scxml scxml.xsd ">
+	<initial>
+	  <!-- Initialization actions go here -->
+    <send event="useJsonResponseMode" to="x-http" />
+    <send event="hideToolbar" to="x-html" />
+    <send event="disableButton" to="x-html" data="back" />
+    <send event="disableButton" to="x-html" data="menu" />
+    <send event="setOrientation" to="x-html" data="landscape" />
+	</initial>
+
+	<datamodel>
+		<!-- Http API Scxml snippet : begin -->
+		<data id="isHttpPostRequest" expr="'true'"/>
+		<!-- Http API Scxml snippet : end -->
+	</datamodel>
+
+	<state id="home">
+    <onentry>
+      <!--<send event="getDeviceParam" to="x-html" target="dm.user" />-->
+      <send event="enable" to="x-barcode" />
+      <send event="enableLocationTracking" to="x-loc" />
+    </onentry>
+
+		<go on="getDeviceParamResponse" from="x-html">
+			<send event="execute" to="x-html" target="setCuemeUserId" data="event.value"/>
+		</go>
+
+		<!-- Barcode Scanner Events -->
+		<!--
+		<go on="barcode" from="x-barcode" global="true">
+			<send event="execute" to="x-html" target="scanner.scanReceived" data="event.value"/>
+		</go>
+		-->
+		<go on="barcodeScanComplete" from="x-barcode" global="true">
+			<send event="execute" to="x-html" target="scanner.scanReceived" data="event.value" />
+		</go>
+		<go on="barcodeScanComplete" from="wm-barcode" global="true">
+			<send event="execute" to="x-html" target="scanner.scanReceived" data="event.value" />
+		</go>
+		<go on="barcodesScanComplete" from="x-barcode" global="true">
+			<send event="execute" to="x-html" target="scanner.scansReceived" data="event.value" />
+		</go>
+		<go on="barcodesScanComplete" from="wm-barcode" global="true">
+			<send event="execute" to="x-html" target="scanner.scansReceived" data="event.value" />
+		</go>
+		<go on="cancelled" from="x-barcode" global="true">
+			<!--<send event="execute" to="x-html" target="alert" data="Barcode scan cancelled." />-->
+		</go>
+		<go on="failed" from="x-barcode" global="true">
+			<!--<send event="execute" to="x-html" target="alert" data="Failed to scan barcode. Please try again." />-->
+		</go>
+		<go on="click" from="x-html" node="enableScanner" global="true">
+			<send event="enable" to="x-barcode" />
+			<send event="enable" to="wm-barcode" />
+		</go>
+		<go on="click" from="x-html" node="disableScanner" global="true">
+			<send event="disable" to="x-barcode" />
+			<send event="disable" to="wm-barcode" />
+		</go>
+		<go on="click" from="x-html" node="btnScan" global="true">
+			<send event="scan" to="x-barcode" />
+			<send event="scan" to="wm-barcode" />
+		</go>
+		<go on="click" from="x-html" node="multiScan" global="true">
+			<send event="multiScan" to="x-barcode" />
+			<send event="multiScan" to="wm-barcode" />
+		</go>
+
+		<!-- ************* Http API Scxml snippet : begin**************-->
+		<!-- Using processRequest and JSON response to optimize the event flow and reduce synchronization issues: BEGIN -->
+		<go on="click" from="x-html" node="doProcessHttpRequest" global="true">
+			<send event="execute" to="x-html" target="httprequest_getRequestObj" />
+		</go>
+		<go on="executeResponse" from="x-html" node="httprequest_getRequestObj" global="true">
+			<send event="processRequests" to="x-http" data="event.value" />
+			<send event="execute" to="x-html" target="httprequest_doneProcessingCurrentRequest" />
+		</go>
+		<go on="click" from="x-html" node="doProcessHttpRequestObj" global="true">
+			<send event="processRequests" to="x-http" data="event.value" />
+		</go>
+		<go on="fetchResponseAsJSON" from="x-http" global="true">
+			<send event="execute" to="x-html" target="httprequest_handleHttpResponseObj" data="event.value"/>
+		</go>
+		<go on="fetchErrorAsJSON" from="x-http" global="true">
+			<send event="execute" to="x-html" target="httprequest_handleHttpResponseErrorObj" data="event.value"/>
+		</go>
+
+		<!-- Using processRequest and JSON response to optimize the event flow and reduce synchronization issues : END-->
+		<!-- ****************Http API Scxml snippet : end****************-->
+
+
+		<!-- ************* Logger snippet : begin**************-->
+		<go on="click" from="x-html" node="doDumpLogs" global="true">
+			<send event="execute" to="x-html" target="__cuemelog" />
+		</go>
+
+		<!-- **************** Logger snippet: end****************-->
+		<go on="click" from="x-html" node="exit" >
+      <send event="showWorkbench" to="x-html" />
+    </go>
+
+    <!-- **************** Authentication : BEGIN ************ -->
+		<go on="click" from="x-html" node="getUserInfo">
+			<send event="getUserAuthenticationDetails" to="x-dm" data="true" />
+		</go>
+		<go on="getUserAuthenticationDetailsResponse" from="x-dm">
+			<send event="execute" to="x-html" target="setUserDetails" data="event.value" />
+		</go>
+		<go on="click" from="x-html" node="getDeviceId">
+			<send event="getDeviceID" to="x-html" />
+		</go>
+		<go on="getDeviceIDResponse" from="x-html">
+			<send event="execute" to="x-html" target="setDeviceId" data="event.value" />
+		</go>
+    <!-- **************** Authentication : END ************** -->
+
+    <!-- **************** Miscellaneous : BEGIN ************* -->
+		<go on="click" from="x-html" node="lockPortrait">
+			<send event="setOrientation" to="x-html" data="portrait" />
+		</go>
+
+		<go on="click" from="x-html" node="lockLandscape">
+			<send event="setOrientation" to="x-html" data="landscape" />
+		</go>
+
+		<!-- appearance (status bar) -->
+		<go on="click" from="x-html" node="updateStatusBarAppearance">
+			<send event="statusBarColorHex" to="wm-appearance" data="event.value" />
+			<send event="statusBarTextLight" to="wm-appearance" />
+		</go>
+
+		<!-- hardware keypress -->
+		<go on="keyPressed" from="x-html"  >
+      <send event="execute" to="x-html" target="handleKeyPressed" data="event.value" />
+		</go>
+
+		<go on="click" from="x-html" node="disableHardwareKey">
+			<send event="disableButton" to="x-html" data="event.value" />
+		</go>
+
+    <onexit>
+    </onexit>
+	</state>
+
+	<final>
+		<!-- Final events go here -->
+	</final>
+</xscxml>
